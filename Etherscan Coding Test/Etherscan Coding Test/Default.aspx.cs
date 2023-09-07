@@ -16,10 +16,10 @@ using System.Xml.Linq;
 /**
  * Hi reviewer, before you see the mess below, I have to say that this isn't my proudest work, I have never
  * used ASP.Net Web Forms before. I did try my best with the time I got, and I would say I did quite a good
- * job for someone who learnt it on the fly.
+ * job for someone who learnt it on the fly :D.
  * 
  * Anyways, hope my code isn't too bad. Kinda wondering why I gotta do backend stuff when I'm applying for 
- * frontend though :/
+ * frontend though :/.
  * 
  * Regards,
  * Woon Eusean
@@ -35,9 +35,7 @@ namespace Etherscan_Coding_Test
 
     public partial class _Default : Page
     {
-        protected int currentPage = 0;
-        protected int perPage = 10;
-
+        // List of tokens from db will be populated into this
         protected List<Token> tokens = new List<Token>();
 
         protected void Page_Load(object sender, EventArgs e)
@@ -50,44 +48,37 @@ namespace Etherscan_Coding_Test
 
         protected void FetchAndBind()
         {
+            // Fetch the tokens from db and bind to TokenGrid
             tokens = DatabaseManager.GetTokens();
-            GridView1.DataSource = tokens;
-            GridView1.DataBind();
+            TokenGrid.DataSource = tokens;
+            TokenGrid.DataBind();
         }
 
-
-
-        protected PaginationDetails GetPaginationDetails()
+        protected void TokenGrid_NavigateToContract(object sender, EventArgs e)
         {
-            try
-            {
-                return DatabaseManager.GetPaginationDetails(perPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return new PaginationDetails { totalRecords = 0, totalPages = 0 };
-            }
-        }
-
-        protected void GridView1_NavigateToContract(object sender, EventArgs e)
-        {
+            // Get the CommandArgument set in the view file.
             LinkButton lnkName = (LinkButton)sender;
 
+            // I set the CommandArgument of the LinkButton
+            // in the view file to the symbol of the token.
             string symbol = lnkName.CommandArgument;
 
+            // Redirect user based on symbol clicked.
             Response.Redirect($"Details.aspx?id={symbol}");
         }
 
-        protected void GridView1_EditRow(object sender, EventArgs e)
+        protected void TokenGrid_EditRow(object sender, EventArgs e)
         {
+            // Get the CommandArgument from the view file
             LinkButton lnkName = (LinkButton)sender;
 
+            // I set the CommandArgument to the row index.
             int rowIndex = Convert.ToInt32(lnkName.CommandArgument);
 
-            // get data from grid view row
-            GridViewRow row = GridView1.Rows[rowIndex];
+            // Get data from grid view row
+            GridViewRow row = TokenGrid.Rows[rowIndex];
             string id = row.Cells[0].Text;
+            // Have to do this acrobatics because the content of the cell is a control.
             string symbol = (row.Cells[2].FindControl("lnkSymbol") as LinkButton).Text;
             string name = row.Cells[3].Text;
             string contractAddress = row.Cells[4].Text;
@@ -108,13 +99,17 @@ namespace Etherscan_Coding_Test
         }
 
 
-        protected void GridView1_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        protected void TokenGrid_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
-            GridView1.PageIndex = e.NewPageIndex;
+            // Set the page index of the pagination
+            // of TokenGrid based on event data.
+            TokenGrid.PageIndex = e.NewPageIndex;
 
             FetchAndBind();
         }
 
+        // Used for giving each token a unique
+        // color in the doughnut chart.
         protected string GetRandomColor(int seed)
         {
             Random rnd = new Random(seed);
@@ -123,6 +118,7 @@ namespace Etherscan_Coding_Test
 
         protected void TokenSave_Click(object sender, EventArgs e)
         {
+            // Creating an Token object from text from textboxes.
             Token token = new Token
             {
                 Id = txtId.Text.Trim() == "" ? -1 : Convert.ToInt32(txtId.Text),
@@ -161,7 +157,7 @@ namespace Etherscan_Coding_Test
 
         private void ExportGridToCSV()
         {
-            FetchAndBind();
+            FetchAndBind(); // Ensure data is up-to-date
 
             Response.Clear();
             Response.Buffer = true;
@@ -169,29 +165,37 @@ namespace Etherscan_Coding_Test
             Response.Charset = "";
             Response.ContentType = "application/text";
 
-            GridView1.AllowPaging = false;
-            GridView1.DataBind();
+            TokenGrid.AllowPaging = false;
+            TokenGrid.DataBind();
 
+            
+            // Go thru each column of the TokenGrid
+            // to get the header row of the csv.
             StringBuilder columnbind = new StringBuilder();
-            for (int k = 0; k < GridView1.Columns.Count - 1; k++)
+            for (int k = 0; k < TokenGrid.Columns.Count - 1; k++)
             {
-                columnbind.Append(GridView1.Columns[k].HeaderText + ',');
+                columnbind.Append(TokenGrid.Columns[k].HeaderText + ',');
             }
             columnbind.Append("\r\n");
-            for (int i = 0; i < GridView1.Rows.Count; i++)
+
+            // Then go through each data row, concatenating it into a single, comma-seperated line.
+            for (int i = 0; i < TokenGrid.Rows.Count; i++)
             {
-                for (int k = 0; k < GridView1.Columns.Count - 1; k++)
+                for (int k = 0; k < TokenGrid.Columns.Count - 1; k++)
                 {
-                    var text = GridView1.Rows[i].Cells[k].Text;
+                    var text = TokenGrid.Rows[i].Cells[k].Text;
+                    // A bit of a hack, but I literally could not think of a better way, sorry.
                     if (text == "" && k == 2)
                     {
-                        text = (GridView1.Rows[i].Cells[k].FindControl("lnkSymbol") as LinkButton).Text;
+                        // Same acrobatics to get the Text value from cells with controls.
+                        text = (TokenGrid.Rows[i].Cells[k].FindControl("lnkSymbol") as LinkButton).Text;
                     }
                     columnbind.Append(text + ',');
                 }
                 columnbind.Append("\r\n");
             }
 
+            // Trigger a download.
             Response.Output.Write(columnbind.ToString());
             Response.Flush();
             Response.End();

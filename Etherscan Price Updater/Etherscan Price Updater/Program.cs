@@ -109,6 +109,9 @@ class Program
         return new MySqlConnection(connectionString);
     }
 
+    /// <summary>
+    /// Creates the database and the table if not exists.
+    /// </summary>
     public static void CreateTableIfNotExists()
     {
         using (MySqlConnection connection = GetConnection())

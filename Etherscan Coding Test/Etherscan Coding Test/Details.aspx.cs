@@ -15,14 +15,11 @@ namespace Etherscan_Coding_Test
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // Get the `id` query string from the page URL.
             string symbol = Request.QueryString["id"];
 
-            currentToken = GetTokenBySymbol(symbol);
-        }
-
-        protected Token GetTokenBySymbol(string symbol)
-        {
-            return DatabaseManager.GetTokenBySymbol(symbol);
+            // Try to find the token in the db.
+            currentToken = DatabaseManager.GetTokenBySymbol(symbol);
         }
     }
 }

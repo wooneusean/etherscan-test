@@ -2,8 +2,8 @@
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <%-- 
-        The default GridView pager looks terrible, but the formatting is not the same as Bootstrap's.
-        Used some guy's styling online and it works great.
+        The default GridView pager looks terrible, and the HTML is not the same as Bootstrap's.
+        So, I used some guy's styling online and it works great.
     --%>
     <style>
         .pagination-ys {
@@ -109,7 +109,6 @@
 
         <hr class="my-4">
 
-
         <section aria-labelledby="tokenTable">
             <div class="table-responsive">
                 <asp:GridView
@@ -117,16 +116,16 @@
                     AllowSorting="true"
                     PageSize="10"
                     CssClass="table align-middle"
-                    ID="GridView1"
+                    ID="TokenGrid"
                     runat="server"
                     AutoGenerateColumns="false"
-                    OnPageIndexChanging="GridView1_PageIndexChanging" PagerStyle-CssClass="pagination-ys">
+                    OnPageIndexChanging="TokenGrid_PageIndexChanging" PagerStyle-CssClass="pagination-ys">
                     <Columns>
                         <asp:BoundField DataField="Id" HeaderText="Id" HeaderStyle-CssClass="collapse" ItemStyle-CssClass="collapse" />
                         <asp:BoundField DataField="Rank" HeaderText="Rank" />
                         <asp:TemplateField HeaderText="Symbol">
                             <ItemTemplate>
-                                <asp:LinkButton ID="lnkSymbol" CssClass="btn btn-link" runat="server" Text='<%# Eval("Symbol") %>' OnClick="GridView1_NavigateToContract" CommandArgument='<%# Eval("Symbol") %>' />
+                                <asp:LinkButton ID="lnkSymbol" CssClass="btn btn-link" runat="server" Text='<%# Eval("Symbol") %>' OnClick="TokenGrid_NavigateToContract" CommandArgument='<%# Eval("Symbol") %>' />
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="Name" HeaderText="Name" />
@@ -136,7 +135,7 @@
                         <asp:BoundField DataField="TotalSupplyPercentage" HeaderText="Total Supply %" />
                         <asp:TemplateField>
                             <ItemTemplate>
-                                <asp:LinkButton CssClass="btn btn-link" runat="server" Text="Edit" OnClick="GridView1_EditRow" CommandArgument='<%# Container.DataItemIndex %>' />
+                                <asp:LinkButton CssClass="btn btn-link" runat="server" Text="Edit" OnClick="TokenGrid_EditRow" CommandArgument='<%# Container.DataItemIndex %>' />
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -149,10 +148,14 @@
     <script>
         const ctx = document.getElementById('tokenChart');
 
+        /**
+         * A bit of LINQ to get the values I want, then just simple
+         * string.Joins to get it into comma-seperated values.
+         */
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: [<%= string.Join(", ", tokens.Select(t => $"'{t.Name}'")) %>],
+                labels: [<%= string.Join(", ", tokens.Select(t => $"'{t.Name}'"))  %>], 
                 datasets: [{
                     label: 'Total Supply',
                     data: [<%= string.Join(", ", tokens.Select(t => t.TotalSupply)) %>],

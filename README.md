@@ -5,3 +5,4 @@ Solution by Woon Eusean
 1. I used a docker instance of MySQL for the database.
 2. Default IP and port is `localhost:3306`.
 3. I used the credentials `root:pass` for MySQL.
+4. Make sure to install the packages!

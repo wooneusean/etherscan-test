@@ -2,6 +2,10 @@
 
 namespace Etherscan_Coding_Test
 {
+    /**
+     * The Token model with additional `Rank` and `TotalSupplyPercentage` fields as
+     * I calcualted it with SQL queries and pass it into the object for ease of use.
+     */
     public class Token
     {
         public int Id { get; set; }
